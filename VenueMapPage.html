@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+    <title>Venue Map (Better Scaling)</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css" />
+    <style>
+        *, *::before, *::after { box-sizing: border-box; }
+        html, body {
+            margin: 0; padding: 0; height: 100%; width: 100%;
+            font-family: 'Segoe UI', sans-serif;
+            background: #f9f9f9;
+            overflow: hidden;
+        }
+        #map {
+            height: 100vh;
+            width: 100vw;
+            position: relative;
+            z-index: 0;
+            touch-action: none;
+        }
+
+        /* Custom Popup Styles */
+        .custom-popup-container {
+            position: absolute;
+            z-index: 15000;
+            pointer-events: none;
+        }
+        .custom-popup {
+            position: relative; background: white; border: 1px solid #ccc;
+            border-radius: 12px; box-shadow: 0 3px 14px rgba(0,0,0,0.4);
+            pointer-events: auto; width: 220px;
+            font-size: 13px; line-height: 1.4; color: #222;
+            padding: 12px; margin: 0; display: flex; flex-direction: column;
+        }
+        .custom-popup-content strong {
+            font-weight: bold; display: block; margin-bottom: 8px;
+            word-wrap: break-word; font-size: 14px; line-height: 1.3;
+        }
+        .custom-popup-content a { text-decoration: none; color: inherit; }
+        .custom-popup-info { font-size: 12px; line-height: 1.4; }
+        .custom-popup-info div {
+            margin-bottom: 4px; word-wrap: break-word;
+        }
+        .custom-popup-tip-container {
+            position: absolute; left: 50%; transform: translateX(-50%);
+            bottom: -9px; width: 17px; height: 9px;
+            overflow: hidden; pointer-events: none;
+        }
+        .custom-popup-tip {
+            width: 17px; height: 17px; background: white;
+            border: 1px solid white; border-top: none; border-left: none;
+            transform: rotate(45deg); margin: -9px auto 0;
+            box-shadow: 1px 1px 1px rgba(0,0,0,0.2);
+        }
+
+        /* Loading Overlay */
+        #loadingOverlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(255, 255, 255, 0.9); z-index: 20000;
+            display: flex; justify-content: center; align-items: center;
+            flex-direction: column; font-size: 1.2em; color: #3b82f6; user-select: none;
+        }
+        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        #loadingSpinner {
+            width: 80px; height: 80px; animation: spin 2s linear infinite;
+            margin-bottom: 15px; fill: #3b82f6;
+        }
+
+        /* Zoom Control Styles */
+        .leaflet-control-zoom {
+            background: transparent !important; box-shadow: none !important;
+            border: none !important; padding: 0 !important;
+        }
+        .leaflet-control-zoom a {
+            width: 44px !important; height: 44px !important; border-radius: 50% !important;
+            background: linear-gradient(135deg, #3b82f6, #60a5fa) !important;
+            box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3); color: white !important;
+            font-size: 28px; transition: all 0.3s ease;
+            border: none !important; display: flex !important; justify-content: center !important;
+            align-items: center !important;
+        }
+        .leaflet-control-zoom a.leaflet-control-zoom-in { margin-bottom: 8px !important; }
+        .leaflet-control-zoom a:hover {
+            background: linear-gradient(135deg, #2563eb, #3b82f6);
+            box-shadow: 0 4px 14px rgba(37, 99, 235, 0.7);
+        }
+        .leaflet-popup { display: none !important; }
+
+        /* --- ICON STYLE --- */
+        .guitar-marker-icon {
+            background-color: #dc2626; /* A strong red color */
+            border-radius: 50%;
+            border: 2px solid white;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.4);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            height: 100%;
+            overflow: hidden; /* Ensures the image respects the border-radius */
+        }
+        .guitar-marker-icon img {
+            width: 100%; /* Make image fill the circle */
+            height: 100%;
+            object-fit: cover; /* Cover the area without distortion */
+        }
+    </style>
+</head>
+<body>
+    <div id="map"></div>
+    <div id="loadingOverlay">
+        <svg id="loadingSpinner" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+             <path d="M 27 38 L 37 38 L 37 50 L 27 50 Z" />
+             <rect x="22" y="12" width="20" height="30" rx="10" ry="10" fill="#1e3a8a"/>
+             <rect x="26" y="16" width="12" height="4" rx="2"/>
+             <rect x="26" y="24" width="12" height="4" rx="2"/>
+             <rect x="26" y="32" width="12" height="4" rx="2"/>
+             <line x1="32" y1="50" x2="32" y2="60" stroke="#3b82f6" stroke-width="4" stroke-linecap="round" />
+        </svg>
+        Loading Venues...
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+
+    <script>
+    window.addEventListener("DOMContentLoaded", () => {
+        const SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRaeCIG4k0nRJAk-IQJRWr9OzkaKEVEWon5mdULnGEPhhW1AHzVo4oXB6eEuGvRRVSglpWg4em18Ri0/pub?gid=1813652457&single=true&output=csv";
+        const NOMINATIM_PROXY = "https://corsproxy.io/?";
+
+        const loadingOverlay = document.getElementById("loadingOverlay");
+        let markerMap = {};
+        let currentOpenPopup = null;
+        let popupCloseTimer = null;
+
+        const defaultCenter = [40.9668, -72.1954];
+        const defaultZoom = 10;
+        const map = L.map("map").setView(defaultCenter, defaultZoom);
+        map.zoomControl.setPosition('topright');
+        L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+             attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(map);
+
+        const markerLayer = L.featureGroup().addTo(map);
+
+        const guitarIcon = L.divIcon({
+            html: `<div class="guitar-marker-icon">
+                       <img src="https://i.imghippo.com/files/IFyu6926IKQ.jpg" alt="Guitar Venue">
+                   </div>`,
+            className: '',
+            iconSize: [30, 30],
+            iconAnchor: [15, 15],
+            popupAnchor: [0, -20]
+        });
+
+        function createCustomPopup(content, latLng) {
+            closeCustomPopup();
+            const popupContainer = document.createElement('div');
+            popupContainer.className = 'custom-popup-container';
+            popupContainer.innerHTML = `<div class="custom-popup"><div class="custom-popup-content">${content}</div><div class="custom-popup-tip-container"><div class="custom-popup-tip"></div></div></div>`;
+
+            popupContainer.addEventListener('mouseenter', () => clearTimeout(popupCloseTimer));
+            popupContainer.addEventListener('mouseleave', () => { popupCloseTimer = setTimeout(closeCustomPopup, 400); });
+
+            document.body.appendChild(popupContainer);
+            currentOpenPopup = popupContainer;
+
+            const popupEl = popupContainer.querySelector('.custom-popup');
+            const markerPoint = map.latLngToContainerPoint(latLng);
+            popupContainer.style.left = (markerPoint.x - (popupEl.offsetWidth / 2)) + 'px';
+            popupContainer.style.top = (markerPoint.y - popupEl.offsetHeight - 29) + 'px';
+        }
+
+        function closeCustomPopup() {
+            if (currentOpenPopup) {
+                currentOpenPopup.remove();
+                currentOpenPopup = null;
+            }
+        }
+        map.on('click', closeCustomPopup);
+
+        async function geocodeAddress(address) {
+            if (!address) return null;
+            const canonicalAddress = address.toLowerCase().trim();
+            if (markerMap[canonicalAddress]) return markerMap[canonicalAddress];
+
+            try {
+                const url = NOMINATIM_PROXY + encodeURIComponent(`https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(address)}`);
+                const res = await fetch(url);
+                const data = await res.json();
+                if (data.length > 0) {
+                    const coords = { lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon) };
+                    markerMap[canonicalAddress] = coords;
+                    return coords;
+                }
+            } catch (e) { console.error("Geocoding failed for:", address, e); }
+            return null;
+        }
+
+        function debounce(func, wait) {
+            let timeout;
+            return function executedFunction(...args) {
+                const later = () => { clearTimeout(timeout); func(...args); };
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+            };
+        }
+
+        function refitMap() {
+            if (markerLayer.getLayers().length > 0) {
+                map.fitBounds(markerLayer.getBounds(), {
+                    paddingTopLeft: [120, 300],
+                    paddingBottomRight: [120, 50]
+                });
+            }
+        }
+        window.addEventListener('resize', debounce(refitMap, 250));
+
+        async function showVenuesOnMap(venues) {
+            markerLayer.clearLayers();
+            const geocodePromises = venues.map(venue =>
+                geocodeAddress(venue.address).then(coords => {
+                    if (coords) venue.coords = coords;
+                    return venue;
+                })
+            );
+
+            const venuesWithCoords = (await Promise.all(geocodePromises)).filter(v => v.coords);
+
+            venuesWithCoords.forEach(venue => {
+                let venueNameHtml = `<strong>${venue.name}</strong>`;
+                if (venue.website) venueNameHtml = `<a href="${venue.website}" target="_blank">${venueNameHtml}</a>`;
+
+                const popupContent = `
+                    ${venueNameHtml}
+                    <div class="custom-popup-info">
+                        <div>${venue.address}</div>
+                        ${venue.phone ? `<div>${venue.phone}</div>` : ""}
+                        ${venue.email ? `<div>${venue.email}</div>` : ""}
+                    </div>`;
+
+                const marker = L.marker(venue.coords, { icon: guitarIcon });
+
+                marker.on("mouseover", function () {
+                    clearTimeout(popupCloseTimer);
+                    createCustomPopup(popupContent, this.getLatLng());
+                });
+                marker.on("mouseout", () => {
+                    popupCloseTimer = setTimeout(closeCustomPopup, 400);
+                });
+
+                markerLayer.addLayer(marker);
+            });
+
+            refitMap();
+        }
+
+        loadingOverlay.style.display = "flex";
+        Papa.parse(SHEET_CSV_URL, {
+            download: true,
+            header: true,
+            complete: async function (results) {
+                const allVenues = results.data.map(row => ({
+                    name: row["Venue Name"],
+                    address: row["Address"],
+                    website: row["Venue Website"],
+                    phone: row["Venue Phone Number"],
+                    email: row["Venue Email"]
+                })).filter(v => v.name && v.address);
+
+                // --- UPDATED DUPLICATE FINDING LOGIC ---
+                const seenAddresses = new Set();
+                const seenNames = new Set();
+
+                const uniqueVenues = allVenues.filter(venue => {
+                    const canonicalAddress = venue.address.toLowerCase().trim();
+                    const canonicalName = venue.name.toLowerCase().trim();
+
+                    // Rule out duplicates if either the name or the address has been seen before
+                    if (seenNames.has(canonicalName) || seenAddresses.has(canonicalAddress)) {
+                        return false; // It's a duplicate, so filter it out
+                    } else {
+                        // It's unique, so add its details to the sets and keep it
+                        seenNames.add(canonicalName);
+                        seenAddresses.add(canonicalAddress);
+                        return true;
+                    }
+                });
+
+                await showVenuesOnMap(uniqueVenues);
+                loadingOverlay.style.display = "none";
+            },
+            error: function(err) {
+                 console.error("Failed to load or parse CSV:", err);
+                 loadingOverlay.innerHTML = "Failed to load venue data.";
+            }
+        });
+    });
+    </script>
+</body>
+</html>
