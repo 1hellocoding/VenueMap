@@ -38,7 +38,13 @@
             font-weight: bold; display: block; margin-bottom: 8px;
             word-wrap: break-word; font-size: 14px; line-height: 1.3;
         }
-        .custom-popup-content a { text-decoration: none; color: inherit; }
+        .custom-popup-content a { 
+            text-decoration: none; 
+            color: #3b82f6; /* Blue link color */
+        }
+        .custom-popup-content a:hover {
+            text-decoration: underline;
+        }
         .custom-popup-info { font-size: 12px; line-height: 1.4; }
         .custom-popup-info div {
             margin-bottom: 4px; word-wrap: break-word;
@@ -112,12 +118,12 @@
     <div id="map"></div>
     <div id="loadingOverlay">
         <svg id="loadingSpinner" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
-             <path d="M 27 38 L 37 38 L 37 50 L 27 50 Z" />
-             <rect x="22" y="12" width="20" height="30" rx="10" ry="10" fill="#1e3a8a"/>
-             <rect x="26" y="16" width="12" height="4" rx="2"/>
-             <rect x="26" y="24" width="12" height="4" rx="2"/>
-             <rect x="26" y="32" width="12" height="4" rx="2"/>
-             <line x1="32" y1="50" x2="32" y2="60" stroke="#3b82f6" stroke-width="4" stroke-linecap="round" />
+              <path d="M 27 38 L 37 38 L 37 50 L 27 50 Z" />
+              <rect x="22" y="12" width="20" height="30" rx="10" ry="10" fill="#1e3a8a"/>
+              <rect x="26" y="16" width="12" height="4" rx="2"/>
+              <rect x="26" y="24" width="12" height="4" rx="2"/>
+              <rect x="26" y="32" width="12" height="4" rx="2"/>
+              <line x1="32" y1="50" x2="32" y2="60" stroke="#3b82f6" stroke-width="4" stroke-linecap="round" />
         </svg>
         Loading Venues...
     </div>
@@ -127,7 +133,11 @@
 
     <script>
     window.addEventListener("DOMContentLoaded", () => {
-        const SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRaeCIG4k0nRJAk-IQJRWr9OzkaKEVEWon5mdULnGEPhhW1AHzVo4oXB6eEuGvRRVSglpWg4em18Ri0/pub?gid=1813652457&single=true&output=csv";
+        // V V V V V V V V V V V V V V V V V V V V V V V V V V V V V
+        // --- PASTE THE LINK TO YOUR NEW CSV FILE IN THE LINE BELOW ---
+        const YOUR_NEW_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRaeCIG4k0nRJAk-IQJRWr9OzkaKEVEWon5mdULnGEPhhW1AHzVo4oXB6eEuGvRRVSglpWg4em18Ri0/pub?gid=1904894569&single=true&output=csv";
+        // ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^
+
         const NOMINATIM_PROXY = "https://corsproxy.io/?";
 
         const loadingOverlay = document.getElementById("loadingOverlay");
@@ -140,19 +150,19 @@
         const map = L.map("map").setView(defaultCenter, defaultZoom);
         map.zoomControl.setPosition('topright');
         L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-             attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+              attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         }).addTo(map);
 
         const markerLayer = L.featureGroup().addTo(map);
 
         const guitarIcon = L.divIcon({
-            html: `<div class="guitar-marker-icon">
-                       <img src="https://i.imghippo.com/files/IFyu6926IKQ.jpg" alt="Guitar Venue">
-                   </div>`,
-            className: '',
-            iconSize: [30, 30],
-            iconAnchor: [15, 15],
-            popupAnchor: [0, -20]
+              html: `<div class="guitar-marker-icon">
+                          <img src="https://i.imghippo.com/files/IFyu6926IKQ.jpg" alt="Guitar Venue">
+                       </div>`,
+              className: '',
+              iconSize: [30, 30],
+              iconAnchor: [15, 15],
+              popupAnchor: [0, -20]
         });
 
         function createCustomPopup(content, latLng) {
@@ -230,15 +240,16 @@
             const venuesWithCoords = (await Promise.all(geocodePromises)).filter(v => v.coords);
 
             venuesWithCoords.forEach(venue => {
-                let venueNameHtml = `<strong>${venue.name}</strong>`;
-                if (venue.website) venueNameHtml = `<a href="${venue.website}" target="_blank">${venueNameHtml}</a>`;
+                // Name is now just bold text
+                const venueNameHtml = `<strong>${venue.name}</strong>`;
 
+                // --- UPDATED: Popup content with new layout ---
                 const popupContent = `
                     ${venueNameHtml}
                     <div class="custom-popup-info">
                         <div>${venue.address}</div>
+                        ${venue.website ? `<div><a href="${venue.website}" target="_blank" rel="noopener noreferrer">${venue.website}</a></div>` : ""}
                         ${venue.phone ? `<div>${venue.phone}</div>` : ""}
-                        ${venue.email ? `<div>${venue.email}</div>` : ""}
                     </div>`;
 
                 const marker = L.marker(venue.coords, { icon: guitarIcon });
@@ -258,19 +269,17 @@
         }
 
         loadingOverlay.style.display = "flex";
-        Papa.parse(SHEET_CSV_URL, {
+        Papa.parse(YOUR_NEW_CSV_URL, {
             download: true,
             header: true,
             complete: async function (results) {
                 const allVenues = results.data.map(row => ({
                     name: row["Venue Name"],
-                    address: row["Address"],
+                    address: row["Venue Address"],
                     website: row["Venue Website"],
-                    phone: row["Venue Phone Number"],
-                    email: row["Venue Email"]
+                    phone: row["Venue Phone Number"]
                 })).filter(v => v.name && v.address);
 
-                // --- UPDATED DUPLICATE FINDING LOGIC ---
                 const seenAddresses = new Set();
                 const seenNames = new Set();
 
@@ -278,11 +287,9 @@
                     const canonicalAddress = venue.address.toLowerCase().trim();
                     const canonicalName = venue.name.toLowerCase().trim();
 
-                    // Rule out duplicates if either the name or the address has been seen before
                     if (seenNames.has(canonicalName) || seenAddresses.has(canonicalAddress)) {
-                        return false; // It's a duplicate, so filter it out
+                        return false;
                     } else {
-                        // It's unique, so add its details to the sets and keep it
                         seenNames.add(canonicalName);
                         seenAddresses.add(canonicalAddress);
                         return true;
