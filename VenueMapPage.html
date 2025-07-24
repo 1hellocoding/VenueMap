@@ -3,98 +3,224 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
-    <title>Venue Map with Bottom Menu</title>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css" />
+    <title>My Bands Tonight</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css" />
     <style>
-        /* General Styles */
         *, *::before, *::after { box-sizing: border-box; }
         html, body {
             margin: 0; padding: 0; height: 100%; width: 100%;
             font-family: 'Segoe UI', sans-serif;
             background: #f9f9f9;
-            overflow: hidden;
+            overflow: hidden; /* Prevent scrollbars */
         }
-
-        /* Map Styles */
-        #map {
+        #app-container {
+            display: flex;
+            flex-direction: column;
             height: 100vh;
-            width: 100vw;
+        }
+        #map {
+            flex: 1; 
             position: relative;
             z-index: 0;
-            touch-action: none;
+            min-height: 0;
         }
-
-        /* Custom Popup Styles */
+        #bottom-nav {
+            flex-shrink: 0;
+        }
+        .calendar {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            width: 288px;
+            background: white;
+            padding: 16px;
+            border-radius: 13px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.08);
+            z-index: 10000;
+            display: flex;
+            flex-direction: column;
+            overflow: visible;
+            height: auto;
+            transition: background-color 0.2s;
+        }
         .custom-popup-container {
             position: absolute;
             z-index: 15000;
             pointer-events: none;
         }
         .custom-popup {
-            position: relative; background: white; border: 1px solid #ccc;
-            border-radius: 12px; box-shadow: 0 3px 14px rgba(0,0,0,0.4);
-            pointer-events: auto; width: 220px;
-            font-size: 13px; line-height: 1.4; color: #222;
-            padding: 12px; margin: 0; display: flex; flex-direction: column;
+            position: relative;
+            background: white;
+            border: 1px solid #ccc;
+            border-radius: 12px;
+            box-shadow: 0 3px 14px rgba(0,0,0,0.4);
+            pointer-events: auto;
+            width: 190px;
+            min-height: 280px;
+            font-size: 13px;
+            line-height: 1.4;  
+            color: #222;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+        }
+        .custom-popup-content {
+            padding: 12px;
+            margin: 0;
+            line-height: 1.4;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: visible;
+        }
+        .custom-popup-content img {
+            width: 100%;
+            max-width: 100%;
+            height: 90px;
+            object-fit: cover;
+            display: block;
+            margin: 0 0 10px 0;
+            border-radius: 8px;
+            flex-shrink: 0;
         }
         .custom-popup-content strong {
-            font-weight: bold; display: block; margin-bottom: 8px;
-            word-wrap: break-word; font-size: 14px; line-height: 1.3;
+            font-weight: bold;
+            display: block;
+            margin-bottom: 5px;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            white-space: normal;
+            font-size: 14px;
+            line-height: 1.3;
         }
         .custom-popup-content a {
             text-decoration: none;
-            color: #3b82f6; /* Blue link color */
+            color: inherit;
         }
-        .custom-popup-content a:hover {
-            text-decoration: underline;
+        .custom-popup-info {
+            flex: 1;
+            font-size: 12px;
+            line-height: 1.3;
+            overflow: visible;
         }
-        .custom-popup-info { font-size: 12px; line-height: 1.4; }
         .custom-popup-info div {
-            margin-bottom: 4px; word-wrap: break-word;
+            margin-bottom: 2px;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            white-space: normal;
+            padding: 1px 0;
+        }
+        .imprecise-notice {
+            font-style: italic;
+            font-size: 11px;
+            color: #555;
+            margin-top: 8px;
+            border-top: 1px solid #eee;
+            padding-top: 5px;
         }
         .custom-popup-tip-container {
-            position: absolute; left: 50%; transform: translateX(-50%);
-            bottom: -9px; width: 17px; height: 9px;
-            overflow: hidden; pointer-events: none;
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            bottom: -9px;
+            width: 17px;
+            height: 9px;
+            overflow: hidden;
+            pointer-events: none;
         }
         .custom-popup-tip {
-            width: 17px; height: 17px; background: white;
-            border: 1px solid white; border-top: none; border-left: none;
-            transform: rotate(45deg); margin: -9px auto 0;
-            box-shadow: 1px 1px 1px rgba(0,0,0,0.2);
+            width: 17px;
+            height: 17px;
+            background: white;
+            border: 1px solid #ccc;
+            border-top: none;
+            border-left: none;
+            transform: rotate(45deg);
+            margin: -9px auto 0;
         }
-
-        /* --- KEYFRAMES FOR SHIMMER ANIMATION --- */
+        #notification-banner {
+            position: fixed;
+            top: -100px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 12px 24px;
+            background-color: white;
+            color: red;
+            font-weight: bold;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            z-index: 99999;
+            transition: top 0.5s ease-in-out;
+        }
+        #notification-banner.show { top: 20px; }
+        .calendar-header {
+            font-size: 1.7em;
+            font-weight: 600;
+            text-align: center;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .calendar-header button {
+            background: none; border: none; font-size: 1.2em;
+            cursor: pointer; color: #3b82f6; user-select: none;
+            padding: 0 8px; transition: color 0.2s;
+        }
+        .calendar-header button:hover { color: #1d4ed8; }
+        .calendar-grid {
+            display: grid; grid-template-columns: repeat(7, 1fr);
+            gap: 6.4px; margin-bottom: 12.8px;
+        }
+        .calendar-grid .day-label {
+            text-align: center; 
+            font-size: 0.8em;
+            font-weight: bold; 
+            color: #64748b;
+        }
+        .day {
+            background: #d1d5db; color: #111827;
+            width: 32px; height: 32px; border-radius: 40%;
+            cursor: pointer; 
+            font-size: 0.9em;
+            transition: all 0.2s ease; display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05); padding: 0;
+        }
+        .day:hover {
+            background: #dbeafe; color: #1e3a8a; transform: scale(1.05);
+        }
+        .day.selected {
+            background: linear-gradient(135deg, #3b82f6, #60a5fa); color: white;
+            font-weight: bold;
+            box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+            transform: scale(1.1);
+        }
+        .day.today { border: 2px solid #3b82f6; }
         @keyframes shimmer {
             100% {
                 transform: translateX(100%);
             }
         }
-
-        /* --- UPDATED LOADING OVERLAY --- */
         #loadingOverlay {
             position: fixed; top: 0; left: 0; right: 0; bottom: 0;
             background: rgba(249, 249, 249, 0.85);
             backdrop-filter: blur(5px);
             z-index: 20000;
-            display: flex;
+            display: none;
             justify-content: center;
             align-items: center;
             flex-direction: column;
             user-select: none;
         }
-
-        /* This container holds the image and clips the shimmer effect */
         .loading-image-container {
             position: relative;
             width: 1000px;
             height: 500px;
             margin-bottom: 25px;
-            /* The outline is applied here */
             filter: drop-shadow(2px 0 0 white) drop-shadow(-2px 0 0 white) drop-shadow(0 2px 0 white) drop-shadow(0 -2px 0 white);
-
-            /* This uses the PNG's alpha channel to mask everything inside the container */
             -webkit-mask-image: url('https://i.imghippo.com/files/ofc9438IXE.png');
             mask-image: url('https://i.imghippo.com/files/ofc9438IXE.png');
             -webkit-mask-size: contain;
@@ -104,8 +230,6 @@
             -webkit-mask-repeat: no-repeat;
             mask-repeat: no-repeat;
         }
-
-        /* The shimmer overlay, which will be clipped by the parent container's mask */
         .loading-image-container::after {
             content: '';
             position: absolute;
@@ -117,44 +241,19 @@
             transform: translateX(-100%);
             animation: shimmer 2.5s infinite linear;
         }
-        
-        /* The actual image, with no effects applied directly to it */
         .loading-image {
             width: 100%;
             height: 100%;
             object-fit: contain;
             display: block;
         }
-
         .loading-text {
             font-size: 1.5em;
             color: #3b82f6;
-            font-weight: bold; /* Changed from 300 to bold */
+            font-weight: bold;
             letter-spacing: 2px;
         }
-
-
-        /* Zoom Control Styles */
-        .leaflet-control-zoom {
-            background: transparent !important; box-shadow: none !important;
-            border: none !important; padding: 0 !important;
-        }
-        .leaflet-control-zoom a {
-            width: 44px !important; height: 44px !important; border-radius: 50% !important;
-            background: linear-gradient(135deg, #3b82f6, #60a5fa) !important;
-            box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3); color: white !important;
-            font-size: 28px; transition: all 0.3s ease;
-            border: none !important; display: flex !important; justify-content: center !important;
-            align-items: center !important;
-        }
-        .leaflet-control-zoom a.leaflet-control-zoom-in { margin-bottom: 8px !important; }
-        .leaflet-control-zoom a:hover {
-            background: linear-gradient(135deg, #2563eb, #3b82f6);
-            box-shadow: 0 4px 14px rgba(37, 99, 235, 0.7);
-        }
-        .leaflet-popup { display: none !important; }
-
-        /* --- ICON STYLE --- */
+        /* --- NEW: Icon style for the guitar pin --- */
         .guitar-marker-icon {
             background-color: #dc2626; /* A strong red color */
             border-radius: 50%;
@@ -166,299 +265,560 @@
             width: 100%;
             height: 100%;
             overflow: hidden; /* Ensures the image respects the border-radius */
+            cursor: pointer;
         }
         .guitar-marker-icon img {
             width: 100%; /* Make image fill the circle */
             height: 100%;
             object-fit: cover; /* Cover the area without distortion */
         }
-
-        /* Bottom Menu Hamburger Animation */
-        .hamburger-line {
-            transition: all 0.3s ease-in-out;
+        /* --- NEW: Updated cluster pin style --- */
+        .custom-cluster-pin {
+            width: 40px !important;
+            height: 40px !important;
+            background-color: #dc2626; /* Match red color */
+            color: white;
+            font-weight: bold;
+            font-size: 14px;
+            border-radius: 50%;
+            border: 2px solid white;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.4);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
         }
-        .open .line-1 {
-            transform: translateY(9px) rotate(45deg);
+        .leaflet-control-zoom {
+            background: transparent !important; box-shadow: none !important;
+            border: none !important; padding: 0 !important; width: auto !important;
         }
-        .open .line-2 {
-            opacity: 0;
-            transform: scaleX(0);
+        .leaflet-control-zoom a {
+            width: 44px !important; height: 44px !important; border-radius: 50% !important;
+            background: linear-gradient(135deg, #3b82f6, #60a5fa) !important;
+            box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3); color: white !important;
+            font-weight: bold; font-size: 28px; text-align: center; cursor: pointer;
+            user-select: none; transition: background 0.3s ease, box-shadow 0.3s ease;
+            border: none !important; display: flex !important; justify-content: center !important;
+            align-items: center !important; box-sizing: border-box; text-decoration: none !important;
+            padding: 0 !important; margin: 0 !important; line-height: normal !important;
         }
-        .open .line-3 {
-            transform: translateY(-9px) rotate(-45deg);
+        .leaflet-control-zoom a.leaflet-control-zoom-in { margin-bottom: 8px !important; }
+        .leaflet-control-zoom a:hover {
+            background: linear-gradient(135deg, #2563eb, #3b82f6);
+            box-shadow: 0 4px 14px rgba(37, 99, 235, 0.7);
         }
+        .leaflet-popup { display: none !important; }
+        .leaflet-marker-icon {
+            transition: transform 0.2s ease-out, opacity 0.2s ease-out;
+        }
+        .spider-leg { transition: all 0.2s ease-out; }
+        .leaflet-pane > svg path.spider-leg {
+            stroke-width: 1.5; stroke: #222; stroke-opacity: 0.5; fill: none;
+        }
+        .marker-faded { opacity: 0.4 !important; pointer-events: none; }
+        .hamburger-line { transition: all 0.3s ease-in-out; }
+        .open .line-1 { transform: translateY(9px) rotate(45deg); }
+        .open .line-2 { opacity: 0; transform: scaleX(0); }
+        .open .line-3 { transform: translateY(-9px) rotate(-45deg); }
     </style>
 </head>
 <body>
-    <div id="map"></div>
-
+    <div id="notification-banner">No events for this date</div>
     <div id="loadingOverlay">
         <div class="loading-image-container">
             <img src="https://i.imghippo.com/files/ofc9438IXE.png" alt="Loading" class="loading-image">
         </div>
-        <div class="loading-text">Loading Venues...</div>
+        <div class="loading-text">Loading Events...</div>
     </div>
 
-    <div id="bottom-nav" class="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-gray-200 z-20000">
-        <div class="flex items-center w-full px-4 py-2 gap-4">
-            <img class="w-12 h-12 rounded-full object-cover pointer-events-none" src="https://i.imghippo.com/files/vPMA5186Y.png" alt="User Profile Picture">
-            <div class="flex flex-1 items-center justify-center gap-2">
-                <a href="https://www.mybandstonight.com/bands-gallery" target="_top" class="flex-1 flex flex-col items-center justify-center text-gray-500 hover:bg-blue-50 hover:text-blue-600 py-2 rounded-xl transition-all duration-300">
-                    <svg class="w-6 h-6 mb-1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
-                    </svg>
-                    <span class="text-xs font-medium text-center">Bands Gallery</span>
-                </a>
-                <a href="https://www.mybandstonight.com/venue-map" target="_top" class="flex-1 flex flex-col items-center justify-center bg-blue-600 text-white py-2 rounded-xl transition-all duration-300 shadow-lg">
-                    <svg class="w-6 h-6 mb-1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" />
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" />
-                    </svg>
-                    <span class="text-xs font-semibold text-center">Venue Map</span>
-                </a>
-                <a href="https://www.mybandstonight.com/home" target="_top" class="flex-1 flex flex-col items-center justify-center text-gray-500 hover:bg-blue-50 hover:text-blue-600 py-2 rounded-xl transition-all duration-300">
-                    <svg class="w-6 h-6 mb-1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 18.75a6 6 0 006-6v-1.5m-6 7.5a6 6 0 01-6-6v-1.5m6 7.5v3.75m-3.75 0h7.5M12 15.75a3 3 0 01-3-3V4.5a3 3 0 016 0v8.25a3 3 0 01-3 3z" />
-                    </svg>
-                    <span class="text-xs font-medium text-center">My Bands Tonight</span>
-                </a>
-                <a href="https://www.mybandstonight.com/newsletter" target="_top" class="flex-1 flex flex-col items-center justify-center text-gray-500 hover:bg-blue-50 hover:text-blue-600 py-2 rounded-xl transition-all duration-300">
-                    <svg class="w-6 h-6 mb-1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" />
-                    </svg>
-                    <span class="text-xs font-medium text-center">Newsletter</span>
-                </a>
-                <a href="https://www.mybandstonight.com/band-reviews" target="_top" class="flex-1 flex flex-col items-center justify-center text-gray-500 hover:bg-blue-50 hover:text-blue-600 py-2 rounded-xl transition-all duration-300">
-                    <svg class="w-6 h-6 mb-1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M11.48 3.499a.562.562 0 011.04 0l2.125 5.111a.563.563 0 00.475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 00-.182.557l1.285 5.385a.562.562 0 01-.84.61l-4.725-2.885a.563.563 0 00-.586 0L6.982 20.54a.562.562 0 01-.84-.61l1.285-5.386a.562.562 0 00-.182-.557l-4.204-3.602a.563.563 0 01.321-.988l5.518-.442a.563.563 0 00.475-.345L11.48 3.5z" />
-                    </svg>
-                    <span class="text-xs font-medium text-center">Leave a Review</span>
-                </a>
+    <div id="app-container">
+        <div id="map">
+            <div class="calendar">
+                <div class="calendar-header">
+                    <button id="prevMonth">&#8592;</button>
+                    <div id="monthYear"></div>
+                    <button id="nextMonth">&#8594;</button>
+                </div>
+                <div class="calendar-grid" id="calendarGrid"></div>
             </div>
-            <div class="relative">
-                <button id="menu-button" class="block w-12 h-12 relative rounded-full">
-                    <img class="w-12 h-12 rounded-full object-cover" src="https://i.imghippo.com/files/IqE3821yyM.png" alt="Menu Button">
-                    <div class="absolute inset-0 bg-black bg-opacity-20 rounded-full flex items-center justify-center">
-                        <div id="hamburger-icon" class="space-y-1.5">
-                            <span class="hamburger-line line-1 block w-6 h-[3px] bg-white rounded-full"></span>
-                            <span class="hamburger-line line-2 block w-6 h-[3px] bg-white rounded-full"></span>
-                            <span class="hamburger-line line-3 block w-6 h-[3px] bg-white rounded-full"></span>
-                        </div>
-                    </div>
-                </button>
-                <div id="contact-menu" class="hidden absolute bottom-full right-0 mb-4 w-48 bg-white border border-gray-200 rounded-lg shadow-lg">
-                    <a href="mailto:mybandstonight@gmail.com" class="flex items-center px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition-colors duration-200 rounded-lg">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 mr-3 text-gray-500">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" />
-                        </svg>
-                        <span>Contact Us</span>
+        </div>
+        <div id="bottom-nav" class="relative bg-white/95 backdrop-blur-md border-t border-gray-200">
+            <div class="absolute bottom-full left-1/2 -translate-x-1/2 px-4 py-2 bg-white/95 backdrop-blur-md rounded-t-lg border-t border-l border-r border-gray-200 text-center whitespace-nowrap">
+                <div class="text-xs text-gray-600">Please confirm all gig dates and times</div>
+            </div>
+           
+            <div class="flex items-center w-full px-4 py-2 gap-4">
+                <img class="w-12 h-12 rounded-full object-cover pointer-events-none" src="https://i.imghippo.com/files/vPMA5186Y.png" alt="User Profile Picture">
+                <div class="flex flex-1 items-center justify-center gap-2">
+                    <a href="https://www.mybandstonight.com/bands-gallery" target="_top" class="flex-1 flex flex-col items-center justify-center text-gray-500 hover:bg-blue-50 hover:text-blue-600 py-2 rounded-xl transition-all duration-300">
+                        <svg class="w-6 h-6 mb-1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" /></svg>
+                        <span class="text-xs font-medium text-center">Bands Gallery</span>
                     </a>
+                    <a href="https://www.mybandstonight.com/venue-map" target="_top" class="flex-1 flex flex-col items-center justify-center text-gray-500 hover:bg-blue-50 hover:text-blue-600 py-2 rounded-xl transition-all duration-300">
+                        <svg class="w-6 h-6 mb-1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" /></svg>
+                        <span class="text-xs font-medium text-center">Venue Map</span>
+                    </a>
+                    <a href="https://www.mybandstonight.com/home" target="_top" class="flex-1 flex flex-col items-center justify-center bg-blue-600 text-white py-2 rounded-xl transition-all duration-300 shadow-lg">
+                        <svg class="w-6 h-6 mb-1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 18.75a6 6 0 006-6v-1.5m-6 7.5a6 6 0 01-6-6v-1.5m6 7.5v3.75m-3.75 0h7.5M12 15.75a3 3 0 01-3-3V4.5a3 3 0 016 0v8.25a3 3 0 01-3 3z" /></svg>
+                        <span class="text-xs font-semibold text-center">My Bands Tonight</span>
+                    </a>
+                    <a href="https://www.mybandstonight.com/newsletter" target="_top" class="flex-1 flex flex-col items-center justify-center text-gray-500 hover:bg-blue-50 hover:text-blue-600 py-2 rounded-xl transition-all duration-300">
+                        <svg class="w-6 h-6 mb-1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25-2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" /></svg>
+                        <span class="text-xs font-medium text-center">Newsletter</span>
+                    </a>
+                    <a href="https://www.mybandstonight.com/band-reviews" target="_top" class="flex-1 flex flex-col items-center justify-center text-gray-500 hover:bg-blue-50 hover:text-blue-600 py-2 rounded-xl transition-all duration-300">
+                        <svg class="w-6 h-6 mb-1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M11.48 3.499a.562.562 0 011.04 0l2.125 5.111a.563.563 0 00.475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 00-.182.557l1.285 5.385a.562.562 0 01-.84.61l-4.725-2.885a.563.563 0 00-.586 0L6.982 20.54a.562.562 0 01-.84-.61l1.285-5.386a.562.562 0 00-.182-.557l-4.204-3.602a.563.563 0 01.321-.988l5.518-.442a.563.563 0 00.475-.345L11.48 3.5z" /></svg>
+                        <span class="text-xs font-medium text-center">Leave a Review</span>
+                    </a>
+                </div>
+                <div class="relative">
+                    <button id="menu-button" class="block w-12 h-12 relative rounded-full">
+                        <img class="w-12 h-12 rounded-full object-cover" src="https://i.imghippo.com/files/IqE3821yyM.png" alt="Menu Button">
+                        <div class="absolute inset-0 bg-black bg-opacity-20 rounded-full flex items-center justify-center">
+                            <div id="hamburger-icon" class="space-y-1.5">
+                                <span class="hamburger-line line-1 block w-6 h-[3px] bg-white rounded-full"></span>
+                                <span class="hamburger-line line-2 block w-6 h-[3px] bg-white rounded-full"></span>
+                                <span class="hamburger-line line-3 block w-6 h-[3px] bg-white rounded-full"></span>
+                            </div>
+                        </div>
+                    </button>
+                    <div id="contact-menu" class="hidden absolute bottom-full right-0 mb-4 w-48 bg-white border border-gray-200 rounded-lg shadow-lg">
+                        <a href="mailto:mybandstonight@gmail.com" class="flex items-center px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition-colors duration-200 rounded-lg">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 mr-3 text-gray-500"><path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25-2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" /></svg>
+                            <span>Contact Us</span>
+                        </a>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 
     <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+
     <script>
-    window.addEventListener("DOMContentLoaded", () => {
-        // --- CSV URL ---
-        const YOUR_NEW_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRaeCIG4k0nRJAk-IQJRWr9OzkaKEVEWon5mdULnGEPhhW1AHzVo4oXB6eEuGvRRVSglpWg4em18Ri0/pub?gid=1904894569&single=true&output=csv";
-        
-        const NOMINATIM_PROXY = "https://corsproxy.io/?";
+        'use strict';
+        const startApp = () => {
+            const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbyp5HeEIvZCJn0a4MXH9vsVht_2M4qxuSSln4QBz7fF-keoz7a2rCYwsu1ZJpjPsiNlgA/exec';
+            const NOMINATIM_PROXY = "https://corsproxy.io/?";
+            const DEFAULT_BAND_PICTURE = "https://i.postimg.cc/X7Rc0MNC/temp-Image-Xyc3fg.avif";
 
-        const loadingOverlay = document.getElementById("loadingOverlay");
-        let markerMap = {};
-        let currentOpenPopup = null;
-        let popupCloseTimer = null;
+            const loadingOverlay = document.getElementById("loadingOverlay");
+            const calendarEl = document.querySelector(".calendar");
+            const calendarGrid = document.getElementById("calendarGrid");
+            const monthYear = document.getElementById("monthYear");
+            const notificationBanner = document.getElementById("notification-banner");
+            let allEvents = [], markerMap = {}, selectedDate = null, currentYear, currentMonth, currentEvents = [];
+            
+            const defaultCenter = [41.04, -72.3];
+            const defaultZoom = 10.5;
+            const map = L.map("map", {
+                zoomControl: true, dragging: true, scrollWheelZoom: true,
+                doubleClickZoom: true, boxZoom: true, keyboard: true,
+                touchZoom: true, tap: true, zoomSnap: 0.1,
+            }).setView(defaultCenter, defaultZoom);
+            
+            map.invalidateSize();
+            map.zoomControl.setPosition('topright');
+            L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png").addTo(map);
 
-        const defaultCenter = [40.9668, -72.1954];
-        const defaultZoom = 10;
-        const map = L.map("map").setView(defaultCenter, defaultZoom);
-        map.zoomControl.setPosition('topright');
-        L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-            attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-        }).addTo(map);
-
-        const markerLayer = L.featureGroup().addTo(map);
-
-        const guitarIcon = L.divIcon({
-            html: `<div class="guitar-marker-icon">
-                        <img src="https://i.imghippo.com/files/IFyu6926IKQ.jpg" alt="Guitar Venue">
-                   </div>`,
-            className: '',
-            iconSize: [30, 30],
-            iconAnchor: [15, 15],
-            popupAnchor: [0, -20]
-        });
-
-        function createCustomPopup(content, latLng) {
-            closeCustomPopup();
-            const popupContainer = document.createElement('div');
-            popupContainer.className = 'custom-popup-container';
-            popupContainer.innerHTML = `<div class="custom-popup"><div class="custom-popup-content">${content}</div><div class="custom-popup-tip-container"><div class="custom-popup-tip"></div></div></div>`;
-
-            popupContainer.addEventListener('mouseenter', () => clearTimeout(popupCloseTimer));
-            popupContainer.addEventListener('mouseleave', () => { popupCloseTimer = setTimeout(closeCustomPopup, 400); });
-
-            document.body.appendChild(popupContainer);
-            currentOpenPopup = popupContainer;
-
-            const popupEl = popupContainer.querySelector('.custom-popup');
-            const markerPoint = map.latLngToContainerPoint(latLng);
-            popupContainer.style.left = (markerPoint.x - (popupEl.offsetWidth / 2)) + 'px';
-            popupContainer.style.top = (markerPoint.y - popupEl.offsetHeight - 29) + 'px';
-        }
-
-        function closeCustomPopup() {
-            if (currentOpenPopup) {
-                currentOpenPopup.remove();
-                currentOpenPopup = null;
-            }
-        }
-        map.on('click', closeCustomPopup);
-
-        async function geocodeAddress(address) {
-            if (!address) return null;
-            const canonicalAddress = address.toLowerCase().trim();
-            if (markerMap[canonicalAddress]) return markerMap[canonicalAddress];
-
-            try {
-                const url = NOMINATIM_PROXY + encodeURIComponent(`https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(address)}`);
-                const res = await fetch(url);
-                const data = await res.json();
-                if (data.length > 0) {
-                    const coords = { lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon) };
-                    markerMap[canonicalAddress] = coords;
-                    return coords;
-                }
-            } catch (e) { console.error("Geocoding failed for:", address, e); }
-            return null;
-        }
-
-        function debounce(func, wait) {
-            let timeout;
-            return function executedFunction(...args) {
-                const later = () => { clearTimeout(timeout); func(...args); };
-                clearTimeout(timeout);
-                timeout = setTimeout(later, wait);
-            };
-        }
-
-        function refitMap() {
-            if (markerLayer.getLayers().length > 0) {
-                map.fitBounds(markerLayer.getBounds(), {
-                    paddingTopLeft: [120, 300],
-                    paddingBottomRight: [120, 50]
-                });
-            }
-        }
-        window.addEventListener('resize', debounce(refitMap, 250));
-
-        async function showVenuesOnMap(venues) {
-            markerLayer.clearLayers();
-            const geocodePromises = venues.map(venue =>
-                geocodeAddress(venue.address).then(coords => {
-                    if (coords) venue.coords = coords;
-                    return venue;
-                })
-            );
-
-            const venuesWithCoords = (await Promise.all(geocodePromises)).filter(v => v.coords);
-
-            venuesWithCoords.forEach(venue => {
-                const venueNameHtml = `<strong>${venue.name}</strong>`;
-
-                const popupContent = `
-                    ${venueNameHtml}
-                    <div class="custom-popup-info">
-                        <div>${venue.address}</div>
-                        ${venue.website ? `<div><a href="${venue.website}" target="_blank" rel="noopener noreferrer">${venue.website}</a></div>` : ""}
-                        ${venue.phone ? `<div>${venue.phone}</div>` : ""}
-                    </div>`;
-
-                const marker = L.marker(venue.coords, { icon: guitarIcon });
-
-                marker.on("mouseover", function () {
-                    clearTimeout(popupCloseTimer);
-                    createCustomPopup(popupContent, this.getLatLng());
-                });
-                marker.on("mouseout", () => {
-                    popupCloseTimer = setTimeout(closeCustomPopup, 400);
-                });
-
-                markerLayer.addLayer(marker);
+            // --- NEW: Using divIcon for the red guitar pin ---
+            const singlePinIcon = L.divIcon({
+                html: `<div class="guitar-marker-icon"><img src="https://i.imghippo.com/files/IFyu6926IKQ.jpg" alt="Event Venue"></div>`,
+                className: '', // The styling is handled by the inner div's class
+                iconSize: [34, 34],
+                iconAnchor: [17, 17], // Anchor to the center of the icon
             });
 
-            refitMap();
-        }
+            let markerLayer = L.featureGroup().addTo(map);
+            let spiderfyLayer = L.featureGroup().addTo(map);
+            let currentSpiderfiedCluster = null;
+            let unspiderfyTimer = null;
+            let currentOpenPopup = null;
+            let popupCloseTimer = null;
 
-        loadingOverlay.style.display = "flex";
-        Papa.parse(YOUR_NEW_CSV_URL, {
-            download: true,
-            header: true,
-            complete: async function (results) {
-                const allVenues = results.data.map(row => ({
-                    name: row["Venue Name"],
-                    address: row["Venue Address"],
-                    website: row["Venue Website"],
-                    phone: row["Venue Phone Number"]
-                })).filter(v => v.name && v.address);
+            function scheduleUnspiderfy() { clearTimeout(unspiderfyTimer); unspiderfyTimer = setTimeout(unspiderfy, 400); }
+            function cancelUnspiderfy() { clearTimeout(unspiderfyTimer); }
 
-                const seenAddresses = new Set();
-                const seenNames = new Set();
+            function createCustomPopup(content, latLng, offset = [0, 0]) {
+                const popupContainer = document.createElement('div');
+                popupContainer.className = 'custom-popup-container';
+                const popup = document.createElement('div');
+                popup.className = 'custom-popup';
+                if (offset[0] !== 0) popup.classList.add('offset-left');
+                const popupContent = document.createElement('div');
+                popupContent.className = 'custom-popup-content';
+                popupContent.innerHTML = content;
+                const tipContainer = document.createElement('div');
+                tipContainer.className = 'custom-popup-tip-container';
+                const tip = document.createElement('div');
+                tip.className = 'custom-popup-tip';
+                tipContainer.appendChild(tip);
+                popup.appendChild(popupContent);
+                popup.appendChild(tipContainer);
+                popupContainer.appendChild(popup);
+                document.body.appendChild(popupContainer);
+                const mapBounds = document.getElementById('map').getBoundingClientRect();
+                const markerPoint = map.latLngToContainerPoint(latLng);
+                let left = mapBounds.left + markerPoint.x - (popup.offsetWidth / 2) + offset[0];
+                // --- MODIFIED: Adjusted popup position for new centered icon anchor ---
+                let top = mapBounds.top + markerPoint.y - popup.offsetHeight - 27; // Position above the 34px icon
+                popupContainer.style.left = left + 'px';
+                popupContainer.style.top = top + 'px';
+                popupContainer.addEventListener('mouseenter', () => { clearTimeout(popupCloseTimer); cancelUnspiderfy(); });
+                popupContainer.addEventListener('mouseleave', () => { popupCloseTimer = setTimeout(closeCustomPopup, 300); scheduleUnspiderfy(); });
+                return popupContainer;
+            }
 
-                const uniqueVenues = allVenues.filter(venue => {
-                    const canonicalAddress = venue.address.toLowerCase().trim();
-                    const canonicalName = venue.name.toLowerCase().trim();
+            function closeCustomPopup() {
+                if (currentOpenPopup) {
+                    currentOpenPopup.remove();
+                    currentOpenPopup = null;
+                }
+            }
 
-                    if (seenNames.has(canonicalName) || seenAddresses.has(canonicalAddress)) {
-                        return false;
+            function showCustomPopup(content, latLng, offset = [0, 0]) {
+                closeCustomPopup();
+                currentOpenPopup = createCustomPopup(content, latLng, offset);
+            }
+
+            function formatTime12h(timeStr) {
+                if (!timeStr || typeof timeStr !== "string") return "";
+                timeStr = timeStr.trim().replace(/(\d{1,2}:\d{2}):\d{2}/, "$1");
+                if (timeStr.toUpperCase().includes("AM") || timeStr.toUpperCase().includes("PM")) { return timeStr.replace(/\s+/g, "").replace(/(AM|PM)/, " $1"); }
+                const match = timeStr.match(/^(\d{1,2}):(\d{2})$/);
+                if (!match) return timeStr;
+                let [, hourStr, minuteStr] = match;
+                let hour = parseInt(hourStr, 10);
+                const ampm = hour >= 12 ? "PM" : "AM";
+                hour = hour % 12;
+                if (hour === 0) hour = 12;
+                return `${hour}:${minuteStr} ${ampm}`;
+            }
+
+            function formatDateForDisplay(dateStr) {
+                if (!dateStr) return "";
+                const [year, month, day] = dateStr.split('-');
+                return `${month}/${day}/${year}`;
+            }
+
+            function getCanonicalAddress(str) {
+                if (!str) return '';
+                return str.toLowerCase().replace(/\s+/g, ' ').trim();
+            }
+
+            function simplifyForFuzzySearch(address) {
+                if (!address) return '';
+                return address.toLowerCase()
+                    .replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g, "")
+                    .replace(/\b(street|st|road|rd|avenue|ave|drive|dr|boulevard|blvd|lane|ln|court|ct|place|pl)\b/g, ' ')
+                    .replace(/\s+/g, ' ').trim();
+            }
+            
+            async function geocodeAddress(event) {
+                const originalAddress = event.address;
+                if (!originalAddress) return null;
+
+                const canonicalAddress = getCanonicalAddress(originalAddress);
+                if (markerMap.hasOwnProperty(canonicalAddress)) {
+                    return markerMap[canonicalAddress];
+                }
+
+                const townRegex = /,\s*([A-Za-z\s]+,\s*[A-Z]{2})/;
+                const townMatch = originalAddress.match(townRegex);
+                const townQuery = townMatch ? townMatch[1] : null;
+
+                const queriesToTry = new Set([
+                    originalAddress,
+                    event.venue ? `${event.venue}, ${originalAddress}` : null,
+                    simplifyForFuzzySearch(originalAddress),
+                    townQuery
+                ].filter(Boolean));
+
+                for (const query of queriesToTry) {
+                    try {
+                        const url = NOMINATIM_PROXY + encodeURIComponent(`https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(query)}`);
+                        const res = await fetch(url);
+                        if (!res.ok) continue;
+                        const data = await res.json();
+                        if (data && data.length > 0) {
+                            const result = {
+                                coords: { lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon) },
+                                imprecise: query === townQuery
+                            };
+                            markerMap[canonicalAddress] = result;
+                            return result;
+                        }
+                    } catch (e) { /* Network error */ }
+                }
+
+                markerMap[canonicalAddress] = null;
+                return null;
+            }
+            
+            async function showEventsOnMap(eventMatches) {
+                unspiderfy();
+                markerLayer.clearLayers();
+                const successfulEvents = [];
+
+                for (const event of eventMatches) {
+                    const geocodeResult = await (event.coords ? Promise.resolve({ coords: event.coords, imprecise: false }) : geocodeAddress(event));
+                    if (geocodeResult && geocodeResult.coords) {
+                        event.coords = geocodeResult.coords;
+                        event.marker = createEventMarker(event, geocodeResult.imprecise);
+                        successfulEvents.push(event);
                     } else {
-                        seenNames.add(canonicalName);
-                        seenAddresses.add(canonicalAddress);
-                        return true;
+                        console.error(`❌ Geocoding Failed: Could not find coordinates for event "${event.name}" at address "${event.address}".`);
+                    }
+                }
+
+                clusterAndDisplay(successfulEvents); 
+                if (markerLayer.getLayers().length > 0) {
+                    map.fitBounds(markerLayer.getBounds(), { paddingTopLeft: [310, 300], paddingBottomRight: [200, 50], maxZoom: 16 });
+                } else {
+                    map.setView(defaultCenter, defaultZoom, { animate: false });
+                }
+            }
+
+            function clusterAndDisplay(events) {
+                markerLayer.clearLayers();
+                const eventsByAddress = new Map();
+                for (const event of events) {
+                    const key = `${event.coords.lat},${event.coords.lng}`;
+                    if (!eventsByAddress.has(key)) eventsByAddress.set(key, []);
+                    eventsByAddress.get(key).push(event);
+                }
+                for (const addressGroup of eventsByAddress.values()) {
+                    if (addressGroup.length > 1) {
+                        markerLayer.addLayer(createClusterMarker(addressGroup));
+                    } else if (addressGroup.length === 1) {
+                        markerLayer.addLayer(addressGroup[0].marker);
+                    }
+                }
+            }
+            
+            function createEventMarker(event, isImprecise) {
+                const timeFormatted = event.time ? formatTime12h(event.time) : "";
+                let eventNameHtml = `<strong>${event.name}</strong>`;
+                if (event.website) eventNameHtml = `<a href="${event.website}" target="_blank">${eventNameHtml}</a>`;
+                
+                const impreciseNotice = isImprecise ? `<div class="imprecise-notice">📍 Location is approximate (town center)</div>` : "";
+
+                const popupContent = `<img src="${DEFAULT_BAND_PICTURE}" alt="${event.name}" referrerpolicy="no-referrer" onerror="this.onerror=null; this.src='${DEFAULT_BAND_PICTURE}';">${eventNameHtml}<div class="custom-popup-info">${timeFormatted ? `<div>${timeFormatted}</div>` : ""}${event.date ? `<div>${formatDateForDisplay(event.date)}</div>` : ""}<div>${event.venue ? `${event.venueLink ? `<a href="${event.venueLink}" target="_blank">${event.venue}</a>` : event.venue}` : ""}</div><div>${event.mapLink ? `<a href="${event.mapLink}" target="_blank">${event.address}</a>` : event.address}</div>${event.phone ? `<div>${event.phone}</div>` : ""} ${impreciseNotice}</div>`;
+                const marker = L.marker(event.coords, { icon: singlePinIcon });
+                marker.on("mouseover", function() {
+                    if (this._icon && L.DomUtil.hasClass(this._icon, 'marker-faded')) return;
+                    cancelUnspiderfy(); clearTimeout(popupCloseTimer);
+                    if (currentOpenPopup) closeCustomPopup();
+                    showCustomPopup(popupContent, this.getLatLng());
+                });
+                marker.on("mouseout", () => { popupCloseTimer = setTimeout(closeCustomPopup, 300); scheduleUnspiderfy(); });
+                return marker;
+            }
+
+            // --- MODIFIED: Updated cluster marker creation ---
+            function createClusterMarker(clusterGroup) {
+                const center = clusterGroup[0].coords;
+                const clusterIcon = L.divIcon({
+                    html: `<div>${clusterGroup.length}</div>`,
+                    className: 'custom-cluster-pin',
+                    iconSize: [40, 40],
+                    iconAnchor: [20, 20] // Anchor to the center of the 40x40 circle
+                });
+                const clusterMarker = L.marker(center, { icon: clusterIcon });
+                clusterMarker.on('mouseover', () => { cancelUnspiderfy(); spiderfy(clusterMarker, clusterGroup); });
+                clusterMarker.on('mouseout', () => { scheduleUnspiderfy(); });
+                return clusterMarker;
+            }
+            
+            function spiderfy(clusterMarker, clusterGroup) {
+                if (currentSpiderfiedCluster && currentSpiderfiedCluster !== clusterMarker) unspiderfy();
+                if (currentSpiderfiedCluster === clusterMarker) return;
+            
+                map.closePopup();
+                currentSpiderfiedCluster = clusterMarker;
+                markerLayer.removeLayer(clusterMarker);
+            
+                const centerLatLng = clusterMarker.getLatLng();
+                markerLayer.eachLayer(layer => {
+                    if (layer !== clusterMarker && centerLatLng.distanceTo(layer.getLatLng()) < 4828) {
+                        if (layer._icon) L.DomUtil.addClass(layer._icon, 'marker-faded');
                     }
                 });
+            
+                const centerPoint = map.latLngToLayerPoint(centerLatLng);
+                const count = clusterGroup.length;
+            
+                // --- MODIFIED layout logic for centered horizontal spread ---
+                const pinWidth = 34; // size of the guitar icon
+                const pinPadding = 15;
+                const totalWidth = (count * pinWidth) + ((count - 1) * pinPadding);
+                const startX = centerPoint.x - (totalWidth / 2);
+                const yOffset = 70;
+            
+                clusterGroup.forEach((event, i) => {
+                    const xPos = startX + (i * (pinWidth + pinPadding)) + (pinWidth / 2);
+                    const yPos = centerPoint.y + yOffset;
+                    const newLatLng = map.layerPointToLatLng(L.point(xPos, yPos));
+            
+                    const leg = L.polyline([centerLatLng, centerLatLng], { className: 'spider-leg', weight: 1.5 });
+                    spiderfyLayer.addLayer(leg);
+                    const marker = event.marker;
+                    marker.setLatLng(centerLatLng).setOpacity(0);
+                    spiderfyLayer.addLayer(marker);
+                    setTimeout(() => {
+                        marker.setLatLng(newLatLng).setOpacity(1);
+                        leg.setLatLngs([centerLatLng, newLatLng]);
+                    }, 10);
+                });
+            
+                spiderfyLayer.on('mouseover', cancelUnspiderfy).on('mouseout', scheduleUnspiderfy);
+            }
 
-                await showVenuesOnMap(uniqueVenues);
-                // --- Fade out the loading screen ---
+            function unspiderfy() {
+                markerLayer.eachLayer(layer => { if (layer._icon) L.DomUtil.removeClass(layer._icon, 'marker-faded'); });
+                if (!currentSpiderfiedCluster) return;
+                
+                const clusterToRestore = currentSpiderfiedCluster;
+                const centerLatLng = clusterToRestore.getLatLng();
+                spiderfyLayer.off();
+                currentSpiderfiedCluster = null;
+                
+                const layersToRemove = [];
+                spiderfyLayer.eachLayer(layer => {
+                    layersToRemove.push(layer);
+                    if (layer instanceof L.Marker) layer.setLatLng(centerLatLng).setOpacity(0);
+                    else if (layer instanceof L.Polyline) layer.setLatLngs([layer.getLatLngs()[0], centerLatLng]);
+                });
+                
+                setTimeout(() => {
+                    layersToRemove.forEach(layer => spiderfyLayer.removeLayer(layer));
+                    if (!markerLayer.hasLayer(clusterToRestore)) markerLayer.addLayer(clusterToRestore);
+                }, 200);
+            }
+
+            async function loadEventsForDate(dateString) {
+                selectedDate = dateString;
+                buildCalendar(currentYear, currentMonth);
+                loadingOverlay.style.opacity = '1';
+                loadingOverlay.style.display = "flex";
+                currentEvents = allEvents.filter((e) => e.date === selectedDate);
+                await showEventsOnMap(currentEvents);
                 loadingOverlay.style.transition = 'opacity 0.5s ease';
                 loadingOverlay.style.opacity = '0';
                 setTimeout(() => {
                     loadingOverlay.style.display = "none";
+                    if (currentEvents.length === 0) {
+                        setTimeout(() => {
+                            notificationBanner.classList.add("show");
+                            setTimeout(() => { notificationBanner.classList.remove("show"); }, 3000);
+                        }, 500);
+                    }
                 }, 500);
-            },
-            error: function(err) {
-                console.error("Failed to load or parse CSV:", err);
-                const loadingText = document.querySelector('.loading-text');
-                if(loadingText) {
-                    loadingText.textContent = "Failed to load data.";
-                    loadingText.style.color = "#dc2626"; // A red color
+            }
+
+            function buildCalendar(year, month) {
+                calendarGrid.innerHTML = "";
+                const dayLabels = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+                dayLabels.forEach(label => { const el = document.createElement("div"); el.textContent = label; el.className = "day-label"; calendarGrid.appendChild(el); });
+                const firstDay = new Date(year, month, 1).getDay();
+                const daysInMonth = new Date(year, month + 1, 0).getDate();
+                monthYear.textContent = `${new Date(year, month).toLocaleString("default", { month: "long" })} ${year}`;
+                for (let i = 0; i < firstDay; i++) calendarGrid.appendChild(document.createElement("div"));
+                const today = new Date();
+                for (let day = 1; day <= daysInMonth; day++) {
+                    const cell = document.createElement("div");
+                    cell.className = "day";
+                    cell.textContent = day;
+                    const thisDate = `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+                    if (today.getDate() === day && today.getMonth() === month && today.getFullYear() === year) cell.classList.add("today");
+                    if (selectedDate === thisDate) cell.classList.add("selected");
+                    cell.onclick = () => loadEventsForDate(thisDate);
+                    calendarGrid.appendChild(cell);
                 }
             }
-        });
 
-        // Bottom Menu Script
-        const menuButton = document.getElementById('menu-button');
-        const contactMenu = document.getElementById('contact-menu');
-        const hamburgerIcon = document.getElementById('hamburger-icon');
+            function setupNavigation() {
+                document.getElementById("prevMonth").onclick = () => { currentMonth--; if (currentMonth < 0) { currentMonth = 11; currentYear--; } buildCalendar(currentYear, currentMonth); };
+                document.getElementById("nextMonth").onclick = () => { currentMonth++; if (currentMonth > 11) { currentMonth = 0; currentYear++; } buildCalendar(currentYear, currentMonth); };
+            }
 
-        menuButton.addEventListener('click', (event) => {
-            event.stopPropagation();
-            contactMenu.classList.toggle('hidden');
-            hamburgerIcon.classList.toggle('open');
-        });
+            function debounce(func, wait) {
+                let timeout;
+                return function(...args) {
+                    const later = () => {
+                        clearTimeout(timeout);
+                        func(...args);
+                    };
+                    clearTimeout(timeout);
+                    timeout = setTimeout(later, wait);
+                };
+            }
 
-        document.addEventListener('click', (event) => {
-            if (!contactMenu.classList.contains('hidden')) {
-                if (!menuButton.contains(event.target)) {
+            function refitMap() {
+                map.invalidateSize(); // Tell Leaflet to re-check the container size
+                if (currentSpiderfiedCluster) return;
+                if (markerLayer.getLayers().length > 0) {
+                    map.fitBounds(markerLayer.getBounds(), {
+                        paddingTopLeft: [310, 300],
+                        paddingBottomRight: [200, 50],
+                        maxZoom: 16
+                    });
+                }
+            }
+            
+            window.addEventListener('resize', debounce(refitMap, 250));
+            map.on('zoomend', () => { unspiderfy(); if(currentEvents.length > 0) clusterAndDisplay(currentEvents.filter(e => e.coords && e.marker)); });
+            map.on('click', unspiderfy);
+            
+            async function fetchAndProcessData() {
+                loadingOverlay.style.display = "flex";
+                try {
+                    const response = await fetch(WEB_APP_URL);
+                    const result = await response.json();
+                    if (result.error) throw new Error(result.error);
+                    allEvents = result.data.map(row => ({
+                        name: row["Name"] || "", address: row["Address"] || "", date: row["Date"] || null,
+                        time: row["Time"] || "", website: row["Band Website"] || "",
+                        venue: row["Venue Name"] || row["Venue"] || row["VenueName"] || row["Venue Title"] || row["Column D"] || "",
+                        phone: row["Venue Phone Number"] || row["Phone"] || row["Phone Number"] || row["Column G"] || "",
+                        mapLink: row["Google Maps Link"] || row["Column K"] || "", venueLink: row["Venue Website"] || row["Column F"] || ""
+                    }));
+                    const today = new Date();
+                    currentYear = today.getFullYear();
+                    currentMonth = today.getMonth();
+                    buildCalendar(currentYear, currentMonth);
+                    setupNavigation();
+                    const todaysDateString = `${currentYear}-${String(currentMonth + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
+                    await loadEventsForDate(todaysDateString);
+                } catch (error) {
+                    console.error("Error fetching data from web app:", error);
+                    const loadingText = document.querySelector('#loadingOverlay .loading-text');
+                    if (loadingText) {
+                        loadingText.textContent = "Failed to load event data.";
+                        loadingText.style.color = "#dc2626";
+                    }
+                }
+            }
+            fetchAndProcessData();
+        };
+
+        window.addEventListener('DOMContentLoaded', () => {
+            setTimeout(startApp, 0);
+            const menuButton = document.getElementById('menu-button');
+            const contactMenu = document.getElementById('contact-menu');
+            const hamburgerIcon = document.getElementById('hamburger-icon');
+            menuButton.addEventListener('click', (event) => {
+                event.stopPropagation();
+                contactMenu.classList.toggle('hidden');
+                hamburgerIcon.classList.toggle('open');
+            });
+            document.addEventListener('click', (event) => {
+                if (!contactMenu.classList.contains('hidden') && !menuButton.contains(event.target)) {
                     contactMenu.classList.add('hidden');
                     hamburgerIcon.classList.remove('open');
                 }
-            }
+            });
         });
-    });
     </script>
 </body>
 </html>
