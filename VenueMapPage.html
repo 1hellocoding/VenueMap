@@ -44,7 +44,7 @@
         }
         .custom-popup-content a {
             text-decoration: none;
-            color: #3b82f6; /* Blue link color */
+            color: #3b82f6;
         }
         .custom-popup-content a:hover {
             text-decoration: underline;
@@ -65,14 +65,14 @@
             box-shadow: 1px 1px 1px rgba(0,0,0,0.2);
         }
 
-        /* --- KEYFRAMES FOR SHIMMER ANIMATION --- */
+        /* Keyframes for Shimmer Animation */
         @keyframes shimmer {
             100% {
                 transform: translateX(100%);
             }
         }
 
-        /* --- UPDATED LOADING OVERLAY --- */
+        /* Loading Overlay */
         #loadingOverlay {
             position: fixed; top: 0; left: 0; right: 0; bottom: 0;
             background: rgba(249, 249, 249, 0.85);
@@ -84,17 +84,12 @@
             flex-direction: column;
             user-select: none;
         }
-
-        /* This container holds the image and clips the shimmer effect */
         .loading-image-container {
             position: relative;
             width: 1000px;
             height: 500px;
             margin-bottom: 25px;
-            /* The outline is applied here */
             filter: drop-shadow(2px 0 0 white) drop-shadow(-2px 0 0 white) drop-shadow(0 2px 0 white) drop-shadow(0 -2px 0 white);
-
-            /* This uses the PNG's alpha channel to mask everything inside the container */
             -webkit-mask-image: url('https://i.imghippo.com/files/ofc9438IXE.png');
             mask-image: url('https://i.imghippo.com/files/ofc9438IXE.png');
             -webkit-mask-size: contain;
@@ -104,37 +99,27 @@
             -webkit-mask-repeat: no-repeat;
             mask-repeat: no-repeat;
         }
-
-        /* The shimmer overlay, which will be clipped by the parent container's mask */
         .loading-image-container::after {
             content: '';
             position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
+            top: 0; left: 0; width: 100%; height: 100%;
             background: linear-gradient(110deg, transparent 40%, rgba(255, 255, 255, 0.4) 50%, transparent 60%);
             transform: translateX(-100%);
             animation: shimmer 2.5s infinite linear;
         }
-        
-        /* The actual image, with no effects applied directly to it */
         .loading-image {
-            width: 100%;
-            height: 100%;
+            width: 100%; height: 100%;
             object-fit: contain;
             display: block;
         }
-
         .loading-text {
             font-size: 1.5em;
             color: #3b82f6;
-            font-weight: bold; /* Changed from 300 to bold */
+            font-weight: bold;
             letter-spacing: 2px;
         }
 
-
-        /* Zoom Control Styles */
+        /* Leaflet Controls */
         .leaflet-control-zoom {
             background: transparent !important; box-shadow: none !important;
             border: none !important; padding: 0 !important;
@@ -154,9 +139,9 @@
         }
         .leaflet-popup { display: none !important; }
 
-        /* --- ICON STYLE --- */
+        /* Marker Icon */
         .guitar-marker-icon {
-            background-color: #dc2626; /* A strong red color */
+            background-color: #dc2626;
             border-radius: 50%;
             border: 2px solid white;
             box-shadow: 0 2px 5px rgba(0,0,0,0.4);
@@ -165,28 +150,19 @@
             align-items: center;
             width: 100%;
             height: 100%;
-            overflow: hidden; /* Ensures the image respects the border-radius */
+            overflow: hidden;
         }
         .guitar-marker-icon img {
-            width: 100%; /* Make image fill the circle */
+            width: 100%;
             height: 100%;
-            object-fit: cover; /* Cover the area without distortion */
+            object-fit: cover;
         }
 
-        /* Bottom Menu Hamburger Animation */
-        .hamburger-line {
-            transition: all 0.3s ease-in-out;
-        }
-        .open .line-1 {
-            transform: translateY(9px) rotate(45deg);
-        }
-        .open .line-2 {
-            opacity: 0;
-            transform: scaleX(0);
-        }
-        .open .line-3 {
-            transform: translateY(-9px) rotate(-45deg);
-        }
+        /* Hamburger Menu */
+        .hamburger-line { transition: all 0.3s ease-in-out; }
+        .open .line-1 { transform: translateY(9px) rotate(45deg); }
+        .open .line-2 { opacity: 0; transform: scaleX(0); }
+        .open .line-3 { transform: translateY(-9px) rotate(-45deg); }
     </style>
 </head>
 <body>
@@ -204,34 +180,23 @@
             <img class="w-12 h-12 rounded-full object-cover pointer-events-none" src="https://i.imghippo.com/files/vPMA5186Y.png" alt="User Profile Picture">
             <div class="flex flex-1 items-center justify-center gap-2 min-w-0">
                 <a href="https://www.mybandstonight.com/bands-gallery" target="_top" class="flex-1 flex flex-col items-center justify-center text-gray-500 hover:bg-blue-50 hover:text-blue-600 py-2 rounded-xl transition-all duration-300">
-                    <svg class="w-6 h-6 mb-1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
-                    </svg>
+                    <svg class="w-6 h-6 mb-1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" /></svg>
                     <span class="text-xs font-medium text-center">Bands Gallery</span>
                 </a>
                 <a href="https://www.mybandstonight.com/venue-map" target="_top" class="flex-1 flex flex-col items-center justify-center bg-blue-600 text-white py-2 rounded-xl transition-all duration-300 shadow-lg">
-                    <svg class="w-6 h-6 mb-1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" />
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" />
-                    </svg>
+                    <svg class="w-6 h-6 mb-1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" /></svg>
                     <span class="text-xs font-semibold text-center">Venue Map</span>
                 </a>
                 <a href="https://www.mybandstonight.com/home" target="_top" class="flex-1 flex flex-col items-center justify-center text-gray-500 hover:bg-blue-50 hover:text-blue-600 py-2 rounded-xl transition-all duration-300">
-                    <svg class="w-6 h-6 mb-1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 18.75a6 6 0 006-6v-1.5m-6 7.5a6 6 0 01-6-6v-1.5m6 7.5v3.75m-3.75 0h7.5M12 15.75a3 3 0 01-3-3V4.5a3 3 0 016 0v8.25a3 3 0 01-3 3z" />
-                    </svg>
+                    <svg class="w-6 h-6 mb-1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 18.75a6 6 0 006-6v-1.5m-6 7.5a6 6 0 01-6-6v-1.5m6 7.5v3.75m-3.75 0h7.5M12 15.75a3 3 0 01-3-3V4.5a3 3 0 016 0v8.25a3 3 0 01-3 3z" /></svg>
                     <span class="text-xs font-medium text-center">My Bands Tonight</span>
                 </a>
                 <a href="https://www.mybandstonight.com/newsletter" target="_top" class="flex-1 flex flex-col items-center justify-center text-gray-500 hover:bg-blue-50 hover:text-blue-600 py-2 rounded-xl transition-all duration-300">
-                    <svg class="w-6 h-6 mb-1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" />
-                    </svg>
+                    <svg class="w-6 h-6 mb-1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" /></svg>
                     <span class="text-xs font-medium text-center">Newsletter</span>
                 </a>
                 <a href="https://www.mybandstonight.com/band-reviews" target="_top" class="flex-1 flex flex-col items-center justify-center text-gray-500 hover:bg-blue-50 hover:text-blue-600 py-2 rounded-xl transition-all duration-300">
-                    <svg class="w-6 h-6 mb-1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M11.48 3.499a.562.562 0 011.04 0l2.125 5.111a.563.563 0 00.475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 00-.182.557l1.285 5.385a.562.562 0 01-.84.61l-4.725-2.885a.563.563 0 00-.586 0L6.982 20.54a.562.562 0 01-.84-.61l1.285-5.386a.562.562 0 00-.182-.557l-4.204-3.602a.563.563 0 01.321-.988l5.518-.442a.563.563 0 00.475-.345L11.48 3.5z" />
-                    </svg>
+                    <svg class="w-6 h-6 mb-1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M11.48 3.499a.562.562 0 011.04 0l2.125 5.111a.563.563 0 00.475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 00-.182.557l1.285 5.385a.562.562 0 01-.84.61l-4.725-2.885a.563.563 0 00-.586 0L6.982 20.54a.562.562 0 01-.84-.61l1.285-5.386a.562.562 0 00-.182-.557l-4.204-3.602a.563.563 0 01.321-.988l5.518-.442a.563.563 0 00.475-.345L11.48 3.5z" /></svg>
                     <span class="text-xs font-medium text-center">Leave a Review</span>
                 </a>
             </div>
@@ -248,15 +213,11 @@
                 </button>
                 <div id="contact-menu" class="hidden absolute bottom-full right-0 mb-4 w-48 bg-white border border-gray-200 rounded-lg shadow-lg">
                     <a href="mailto:mybandstonight@gmail.com" class="flex items-center px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition-colors duration-200 rounded-t-lg">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 mr-3 text-gray-500">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" />
-                        </svg>
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 mr-3 text-gray-500"><path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" /></svg>
                         <span>Contact Us</span>
                     </a>
                     <a href="https://www.mybandstonight.com/admin-panel" target="_top" class="flex items-center px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition-colors duration-200 rounded-b-lg border-t border-gray-100">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 mr-3 text-gray-500">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.286zm0 13.036h.008v.008h-.008v-.008z" />
-                        </svg>
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 mr-3 text-gray-500"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.286zm0 13.036h.008v.008h-.008v-.008z" /></svg>
                         <span>Admin</span>
                     </a>
                 </div>
@@ -265,16 +226,12 @@
     </div>
 
     <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
     <script>
     window.addEventListener("DOMContentLoaded", () => {
-        // --- CSV URL ---
-        const YOUR_NEW_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRaeCIG4k0nRJAk-IQJRWr9OzkaKEVEWon5mdULnGEPhhW1AHzVo4oXB6eEuGvRRVSglpWg4em18Ri0/pub?gid=1904894569&single=true&output=csv";
+        // --- 1. PASTE YOUR DEPLOYED WEB APP URL HERE ---
+        const VENUE_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwILrI_o_-lTLwFcPVS7j3zh0xAuzyiYlKFhviOueS7g09zYy0Ab1GxVAwCg481X27ZGA/exec";
         
-        const NOMINATIM_PROXY = "https://corsproxy.io/?";
-
         const loadingOverlay = document.getElementById("loadingOverlay");
-        let markerMap = {};
         let currentOpenPopup = null;
         let popupCloseTimer = null;
 
@@ -289,9 +246,7 @@
         const markerLayer = L.featureGroup().addTo(map);
 
         const guitarIcon = L.divIcon({
-            html: `<div class="guitar-marker-icon">
-                            <img src="https://i.imghippo.com/files/IFyu6926IKQ.jpg" alt="Guitar Venue">
-                       </div>`,
+            html: `<div class="guitar-marker-icon"><img src="https://i.imghippo.com/files/IFyu6926IKQ.jpg" alt="Guitar Venue"></div>`,
             className: '',
             iconSize: [30, 30],
             iconAnchor: [15, 15],
@@ -303,13 +258,10 @@
             const popupContainer = document.createElement('div');
             popupContainer.className = 'custom-popup-container';
             popupContainer.innerHTML = `<div class="custom-popup"><div class="custom-popup-content">${content}</div><div class="custom-popup-tip-container"><div class="custom-popup-tip"></div></div></div>`;
-
             popupContainer.addEventListener('mouseenter', () => clearTimeout(popupCloseTimer));
             popupContainer.addEventListener('mouseleave', () => { popupCloseTimer = setTimeout(closeCustomPopup, 400); });
-
             document.body.appendChild(popupContainer);
             currentOpenPopup = popupContainer;
-
             const popupEl = popupContainer.querySelector('.custom-popup');
             const markerPoint = map.latLngToContainerPoint(latLng);
             popupContainer.style.left = (markerPoint.x - (popupEl.offsetWidth / 2)) + 'px';
@@ -324,24 +276,6 @@
         }
         map.on('click', closeCustomPopup);
 
-        async function geocodeAddress(address) {
-            if (!address) return null;
-            const canonicalAddress = address.toLowerCase().trim();
-            if (markerMap[canonicalAddress]) return markerMap[canonicalAddress];
-
-            try {
-                const url = NOMINATIM_PROXY + encodeURIComponent(`https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(address)}`);
-                const res = await fetch(url);
-                const data = await res.json();
-                if (data.length > 0) {
-                    const coords = { lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon) };
-                    markerMap[canonicalAddress] = coords;
-                    return coords;
-                }
-            } catch (e) { console.error("Geocoding failed for:", address, e); }
-            return null;
-        }
-
         function debounce(func, wait) {
             let timeout;
             return function executedFunction(...args) {
@@ -355,26 +289,18 @@
             if (markerLayer.getLayers().length > 0) {
                 map.fitBounds(markerLayer.getBounds(), {
                     paddingTopLeft: [120, 300],
-                    paddingBottomRight: [120, 50]
+                    paddingBottomRight: [120, 50],
+                    maxZoom: 15
                 });
             }
         }
         window.addEventListener('resize', debounce(refitMap, 250));
 
-        async function showVenuesOnMap(venues) {
+        // This function is now simple because it doesn't do any geocoding
+        function showVenuesOnMap(venues) {
             markerLayer.clearLayers();
-            const geocodePromises = venues.map(venue =>
-                geocodeAddress(venue.address).then(coords => {
-                    if (coords) venue.coords = coords;
-                    return venue;
-                })
-            );
-
-            const venuesWithCoords = (await Promise.all(geocodePromises)).filter(v => v.coords);
-
-            venuesWithCoords.forEach(venue => {
+            venues.forEach(venue => {
                 const venueNameHtml = `<strong>${venue.name}</strong>`;
-
                 const popupContent = `
                     ${venueNameHtml}
                     <div class="custom-popup-info">
@@ -382,9 +308,7 @@
                         ${venue.website ? `<div><a href="${venue.website}" target="_blank" rel="noopener noreferrer">${venue.website}</a></div>` : ""}
                         ${venue.phone ? `<div>${venue.phone}</div>` : ""}
                     </div>`;
-
                 const marker = L.marker(venue.coords, { icon: guitarIcon });
-
                 marker.on("mouseover", function () {
                     clearTimeout(popupCloseTimer);
                     createCustomPopup(popupContent, this.getLatLng());
@@ -392,76 +316,65 @@
                 marker.on("mouseout", () => {
                     popupCloseTimer = setTimeout(closeCustomPopup, 400);
                 });
-
                 markerLayer.addLayer(marker);
             });
-
             refitMap();
         }
 
-        loadingOverlay.style.display = "flex";
-        Papa.parse(YOUR_NEW_CSV_URL, {
-            download: true,
-            header: true,
-            complete: async function (results) {
-                const allVenues = results.data.map(row => ({
-                    name: row["Venue Name"],
-                    address: row["Venue Address"],
-                    website: row["Venue Website"],
-                    phone: row["Venue Phone Number"]
-                })).filter(v => v.name && v.address);
-
-                const seenAddresses = new Set();
-                const seenNames = new Set();
-
-                const uniqueVenues = allVenues.filter(venue => {
-                    const canonicalAddress = venue.address.toLowerCase().trim();
-                    const canonicalName = venue.name.toLowerCase().trim();
-
-                    if (seenNames.has(canonicalName) || seenAddresses.has(canonicalAddress)) {
-                        return false;
-                    } else {
-                        seenNames.add(canonicalName);
-                        seenAddresses.add(canonicalAddress);
-                        return true;
+        async function fetchAndProcessVenues() {
+            loadingOverlay.style.display = "flex";
+            try {
+                if (VENUE_WEB_APP_URL === "YOUR_VENUE_WEB_APP_URL") {
+                    throw new Error("Venue Web App URL is not set.");
+                }
+                const response = await fetch(VENUE_WEB_APP_URL);
+                const result = await response.json();
+                
+                const allVenues = result.data.map(row => ({
+                    name: row.venueName,
+                    address: row.venueAddress,
+                    website: row.venueWebsite,
+                    phone: row.venuePhone,
+                    coords: {
+                        lat: parseFloat(row.lat),
+                        lng: parseFloat(row.lng)
                     }
-                });
+                }));
+                
+                showVenuesOnMap(allVenues);
 
-                await showVenuesOnMap(uniqueVenues);
-                // --- Fade out the loading screen ---
+            } catch (err) {
+                console.error("Failed to load or parse data:", err);
+                const loadingText = document.querySelector('.loading-text');
+                if(loadingText) {
+                    loadingText.textContent = "Failed to load data.";
+                    loadingText.style.color = "#dc2626";
+                }
+            } finally {
                 loadingOverlay.style.transition = 'opacity 0.5s ease';
                 loadingOverlay.style.opacity = '0';
                 setTimeout(() => {
                     loadingOverlay.style.display = "none";
                 }, 500);
-            },
-            error: function(err) {
-                console.error("Failed to load or parse CSV:", err);
-                const loadingText = document.querySelector('.loading-text');
-                if(loadingText) {
-                    loadingText.textContent = "Failed to load data.";
-                    loadingText.style.color = "#dc2626"; // A red color
-                }
             }
-        });
+        }
+        
+        // 2. Start the application by fetching the data
+        fetchAndProcessVenues();
 
         // Bottom Menu Script
         const menuButton = document.getElementById('menu-button');
         const contactMenu = document.getElementById('contact-menu');
         const hamburgerIcon = document.getElementById('hamburger-icon');
-
         menuButton.addEventListener('click', (event) => {
             event.stopPropagation();
             contactMenu.classList.toggle('hidden');
             hamburgerIcon.classList.toggle('open');
         });
-
         document.addEventListener('click', (event) => {
-            if (!contactMenu.classList.contains('hidden')) {
-                if (!menuButton.contains(event.target)) {
-                    contactMenu.classList.add('hidden');
-                    hamburgerIcon.classList.remove('open');
-                }
+            if (!contactMenu.classList.contains('hidden') && !menuButton.contains(event.target)) {
+                contactMenu.classList.add('hidden');
+                hamburgerIcon.classList.remove('open');
             }
         });
     });
