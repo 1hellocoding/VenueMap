@@ -157,6 +157,17 @@
             height: 100%;
             object-fit: cover;
         }
+        
+        /* Map Logo */
+        #map-logo {
+            position: absolute;
+            bottom: 50px; /* Positioned above the bottom nav bar */
+            right: 10px;
+            width: 150px;
+            height: auto;
+            z-index: 999;
+            pointer-events: none;
+        }
 
         /* Hamburger Menu */
         .hamburger-line { transition: all 0.3s ease-in-out; }
@@ -166,7 +177,9 @@
     </style>
 </head>
 <body>
-    <div id="map"></div>
+    <div id="map">
+        <img id="map-logo" src="https://i.imghippo.com/files/ofc9438IXE.png" alt="My Bands Tonight Logo">
+    </div>
 
     <div id="loadingOverlay">
         <div class="loading-image-container">
