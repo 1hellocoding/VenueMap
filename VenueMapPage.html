@@ -16,13 +16,24 @@
             overflow: hidden;
         }
 
+        /* App Layout */
+        #app-container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+
         /* Map Styles */
         #map {
-            height: 100vh;
-            width: 100vw;
+            flex: 1;
             position: relative;
             z-index: 0;
-            touch-action: none;
+            min-height: 0;
+        }
+
+        /* Bottom Nav */
+        #bottom-nav {
+            flex-shrink: 0;
         }
 
         /* Custom Popup Styles */
@@ -138,6 +149,7 @@
             box-shadow: 0 4px 14px rgba(37, 99, 235, 0.7);
         }
         .leaflet-popup { display: none !important; }
+        .leaflet-control-attribution { display: none !important; }
 
         /* Marker Icon */
         .guitar-marker-icon {
@@ -158,15 +170,25 @@
             object-fit: cover;
         }
         
-        /* Map Logo */
-        #map-logo {
+        /* Map Logo & Copyright */
+        #logo-container {
             position: absolute;
-            bottom: 40px; /* Positioned above the bottom nav bar */
+            bottom: 4px; 
             right: 10px;
-            width: 200px;
-            height: auto;
             z-index: 999;
             pointer-events: none;
+            text-align: right;
+        }
+        #map-logo {
+            position: relative;
+            right: -30px; /* Moves logo further right */
+            width: 200px;
+            height: auto;
+            margin-bottom: -60px;
+        }
+        #copyright-notice {
+            font-size: 10px;
+            color: #555;
         }
 
         /* Hamburger Menu */
@@ -177,10 +199,6 @@
     </style>
 </head>
 <body>
-    <div id="map">
-        <img id="map-logo" src="https://i.imghippo.com/files/ofc9438IXE.png" alt="My Bands Tonight Logo">
-    </div>
-
     <div id="loadingOverlay">
         <div class="loading-image-container">
             <img src="https://i.imghippo.com/files/ofc9438IXE.png" alt="Loading" class="loading-image">
@@ -188,55 +206,65 @@
         <div class="loading-text">Loading Venues...</div>
     </div>
 
-    <div id="bottom-nav" class="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-gray-200 z-20000">
-        <div class="flex items-center w-full px-4 py-2 gap-4">
-            <img class="w-12 h-12 rounded-full object-cover pointer-events-none" src="https://i.imghippo.com/files/vPMA5186Y.png" alt="User Profile Picture">
-            <div class="flex flex-1 items-center justify-center gap-2 min-w-0">
-                <a href="https://www.mybandstonight.com/bands-gallery" target="_top" class="flex-1 flex flex-col items-center justify-center text-gray-500 hover:bg-blue-50 hover:text-blue-600 py-2 rounded-xl transition-all duration-300">
-                    <svg class="w-6 h-6 mb-1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" /></svg>
-                    <span class="text-xs font-medium text-center">Bands Gallery</span>
-                </a>
-                <a href="https://www.mybandstonight.com/venue-map" target="_top" class="flex-1 flex flex-col items-center justify-center bg-blue-600 text-white py-2 rounded-xl transition-all duration-300 shadow-lg">
-                    <svg class="w-6 h-6 mb-1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" /></svg>
-                    <span class="text-xs font-semibold text-center">Venue Map</span>
-                </a>
-                <a href="https://www.mybandstonight.com/home" target="_top" class="flex-1 flex flex-col items-center justify-center text-gray-500 hover:bg-blue-50 hover:text-blue-600 py-2 rounded-xl transition-all duration-300">
-                    <svg class="w-6 h-6 mb-1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 18.75a6 6 0 006-6v-1.5m-6 7.5a6 6 0 01-6-6v-1.5m6 7.5v3.75m-3.75 0h7.5M12 15.75a3 3 0 01-3-3V4.5a3 3 0 016 0v8.25a3 3 0 01-3 3z" /></svg>
-                    <span class="text-xs font-medium text-center">My Bands Tonight</span>
-                </a>
-                <a href="https://www.mybandstonight.com/newsletter" target="_top" class="flex-1 flex flex-col items-center justify-center text-gray-500 hover:bg-blue-50 hover:text-blue-600 py-2 rounded-xl transition-all duration-300">
-                    <svg class="w-6 h-6 mb-1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" /></svg>
-                    <span class="text-xs font-medium text-center">Newsletter</span>
-                </a>
-                <a href="https://www.mybandstonight.com/band-reviews" target="_top" class="flex-1 flex flex-col items-center justify-center text-gray-500 hover:bg-blue-50 hover:text-blue-600 py-2 rounded-xl transition-all duration-300">
-                    <svg class="w-6 h-6 mb-1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M11.48 3.499a.562.562 0 011.04 0l2.125 5.111a.563.563 0 00.475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 00-.182.557l1.285 5.385a.562.562 0 01-.84.61l-4.725-2.885a.563.563 0 00-.586 0L6.982 20.54a.562.562 0 01-.84-.61l1.285-5.386a.562.562 0 00-.182-.557l-4.204-3.602a.563.563 0 01.321-.988l5.518-.442a.563.563 0 00.475-.345L11.48 3.5z" /></svg>
-                    <span class="text-xs font-medium text-center">Leave a Review</span>
-                </a>
+    <div id="app-container">
+        <div id="map">
+            <div id="logo-container">
+                <img id="map-logo" src="https://i.imghippo.com/files/ofc9438IXE.png" alt="My Bands Tonight Logo">
+                <div id="copyright-notice">© 2025 Mybandstonight.com</div>
             </div>
-            <div class="relative">
-                <button id="menu-button" class="block w-12 h-12 relative rounded-full">
-                    <img class="w-12 h-12 rounded-full object-cover" src="https://i.imghippo.com/files/IqE3821yyM.png" alt="Menu Button">
-                    <div class="absolute inset-0 bg-black bg-opacity-20 rounded-full flex items-center justify-center">
-                        <div id="hamburger-icon" class="space-y-1.5">
-                            <span class="hamburger-line line-1 block w-6 h-[3px] bg-white rounded-full"></span>
-                            <span class="hamburger-line line-2 block w-6 h-[3px] bg-white rounded-full"></span>
-                            <span class="hamburger-line line-3 block w-6 h-[3px] bg-white rounded-full"></span>
+        </div>
+    
+        <div id="bottom-nav" class="relative bg-white/95 backdrop-blur-md border-t border-gray-200">
+            <div class="flex items-center w-full px-4 py-2 gap-4">
+                <img class="w-12 h-12 rounded-full object-cover pointer-events-none" src="https://i.imghippo.com/files/vPMA5186Y.png" alt="User Profile Picture">
+                <div class="flex flex-1 items-center justify-center gap-2 min-w-0">
+                    <a href="https://www.mybandstonight.com/bands-gallery" target="_top" class="flex-1 flex flex-col items-center justify-center text-gray-500 hover:bg-blue-50 hover:text-blue-600 py-2 rounded-xl transition-all duration-300">
+                        <svg class="w-6 h-6 mb-1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" /></svg>
+                        <span class="text-xs font-medium text-center">Bands Gallery</span>
+                    </a>
+                    <a href="https://www.mybandstonight.com/venue-map" target="_top" class="flex-1 flex flex-col items-center justify-center bg-blue-600 text-white py-2 rounded-xl transition-all duration-300 shadow-lg">
+                        <svg class="w-6 h-6 mb-1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" /></svg>
+                        <span class="text-xs font-semibold text-center">Venue Map</span>
+                    </a>
+                    <a href="https://www.mybandstonight.com/home" target="_top" class="flex-1 flex flex-col items-center justify-center text-gray-500 hover:bg-blue-50 hover:text-blue-600 py-2 rounded-xl transition-all duration-300">
+                        <svg class="w-6 h-6 mb-1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 18.75a6 6 0 006-6v-1.5m-6 7.5a6 6 0 01-6-6v-1.5m6 7.5v3.75m-3.75 0h7.5M12 15.75a3 3 0 01-3-3V4.5a3 3 0 016 0v8.25a3 3 0 01-3 3z" /></svg>
+                        <span class="text-xs font-medium text-center">My Bands Tonight</span>
+                    </a>
+                    <a href="https://www.mybandstonight.com/newsletter" target="_top" class="flex-1 flex flex-col items-center justify-center text-gray-500 hover:bg-blue-50 hover:text-blue-600 py-2 rounded-xl transition-all duration-300">
+                        <svg class="w-6 h-6 mb-1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" /></svg>
+                        <span class="text-xs font-medium text-center">Newsletter</span>
+                    </a>
+                    <a href="https://www.mybandstonight.com/band-reviews" target="_top" class="flex-1 flex flex-col items-center justify-center text-gray-500 hover:bg-blue-50 hover:text-blue-600 py-2 rounded-xl transition-all duration-300">
+                        <svg class="w-6 h-6 mb-1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M11.48 3.499a.562.562 0 011.04 0l2.125 5.111a.563.563 0 00.475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 00-.182.557l1.285 5.385a.562.562 0 01-.84.61l-4.725-2.885a.563.563 0 00-.586 0L6.982 20.54a.562.562 0 01-.84-.61l1.285-5.386a.562.562 0 00-.182-.557l-4.204-3.602a.563.563 0 01.321-.988l5.518-.442a.563.563 0 00.475-.345L11.48 3.5z" /></svg>
+                        <span class="text-xs font-medium text-center">Leave a Review</span>
+                    </a>
+                </div>
+                <div class="relative">
+                    <button id="menu-button" class="block w-12 h-12 relative rounded-full">
+                        <img class="w-12 h-12 rounded-full object-cover" src="https://i.imghippo.com/files/IqE3821yyM.png" alt="Menu Button">
+                        <div class="absolute inset-0 bg-black bg-opacity-20 rounded-full flex items-center justify-center">
+                            <div id="hamburger-icon" class="space-y-1.5">
+                                <span class="hamburger-line line-1 block w-6 h-[3px] bg-white rounded-full"></span>
+                                <span class="hamburger-line line-2 block w-6 h-[3px] bg-white rounded-full"></span>
+                                <span class="hamburger-line line-3 block w-6 h-[3px] bg-white rounded-full"></span>
+                            </div>
                         </div>
+                    </button>
+                    <div id="contact-menu" class="hidden absolute bottom-full right-0 mb-4 w-48 bg-white border border-gray-200 rounded-lg shadow-lg">
+                        <a href="mailto:info@mybandstonight.com" class="flex items-center px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition-colors duration-200 rounded-t-lg">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 mr-3 text-gray-500"><path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" /></svg>
+                            <span>Contact Us</span>
+                        </a>
+                        <a href="https://www.mybandstonight.com/admin-panel" target="_top" class="flex items-center px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition-colors duration-200 rounded-b-lg border-t border-gray-100">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 mr-3 text-gray-500"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.286zm0 13.036h.008v.008h-.008v-.008z" /></svg>
+                            <span>Admin</span>
+                        </a>
                     </div>
-                </button>
-                <div id="contact-menu" class="hidden absolute bottom-full right-0 mb-4 w-48 bg-white border border-gray-200 rounded-lg shadow-lg">
-                    <a href="mailto:info@mybandstonight.com" class="flex items-center px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition-colors duration-200 rounded-t-lg">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 mr-3 text-gray-500"><path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" /></svg>
-                        <span>Contact Us</span>
-                    </a>
-                    <a href="https://www.mybandstonight.com/admin-panel" target="_top" class="flex items-center px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition-colors duration-200 rounded-b-lg border-t border-gray-100">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 mr-3 text-gray-500"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.286zm0 13.036h.008v.008h-.008v-.008z" /></svg>
-                        <span>Admin</span>
-                    </a>
                 </div>
             </div>
         </div>
     </div>
+
 
     <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
     <script>
@@ -252,9 +280,7 @@
         const defaultZoom = 10;
         const map = L.map("map").setView(defaultCenter, defaultZoom);
         map.zoomControl.setPosition('topright');
-        L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-            attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-        }).addTo(map);
+        L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png").addTo(map);
 
         const markerLayer = L.featureGroup().addTo(map);
 
@@ -299,6 +325,7 @@
         }
 
         function refitMap() {
+            map.invalidateSize();
             if (markerLayer.getLayers().length > 0) {
                 map.fitBounds(markerLayer.getBounds(), {
                     paddingTopLeft: [120, 300],
